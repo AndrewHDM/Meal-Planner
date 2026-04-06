@@ -291,8 +291,7 @@ function renderPlanner() {
 }
 
 function getActiveRecipeIds() {
-  const assignedIds = Object.values(state.assignments).filter(Boolean);
-  return [...new Set([...state.selected, ...assignedIds])];
+  return [...state.selected];
 }
 
 function grocerySessionKey(activeRecipeIds) {
@@ -324,11 +323,15 @@ function renderGroceryList() {
   const activeRecipeIds = getActiveRecipeIds();
   const count = activeRecipeIds.length;
 
+  if (count === 0) {
+    el.selectionHint.textContent = "Select meals to generate your grocery list.";
+    el.groceryList.innerHTML = "";
+    return;
+  }
+
   if (count < 3 || count > 5) {
     el.selectionHint.textContent =
-      count === 0
-        ? "Select 3–5 meals to build your grocery list."
-        : `You currently have ${count} meals. Keep it between 3 and 5 for the week.`;
+      `You currently have ${count} meals. Keep it between 3 and 5 for the week.`;
   } else {
     el.selectionHint.textContent = "Ready to shop. Check items off as you go.";
   }
