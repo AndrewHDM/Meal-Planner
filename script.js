@@ -1,6 +1,7 @@
 const STORE_SECTIONS = ["Produce", "Meat/Seafood", "Dairy", "Pantry", "Frozen"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const NEWLINE = "\n";
+const TARGET_SERVINGS = 2;
 const STAPLE_KEYWORDS = [
   "salt",
   "pepper",
@@ -122,10 +123,11 @@ const el = {
 const state = {
   recipes: [...defaultRecipes, ...loadJson("mealPlannerRecipes", [])],
   selected: new Set(loadJson("mealPlannerSelected", [])),
-  assignments: loadJson("mealPlannerAssignments", Object.fromEntries(DAYS.map((d) => [d, ""]))),
+  assignments: Object.fromEntries(DAYS.map((d) => [d, ""])),
   includeStaples: loadJson("mealPlannerIncludeStaples", false),
   groceryChecks: loadJson("mealPlannerGroceryChecks", {})
 };
+localStorage.removeItem("mealPlannerAssignments");
 
 function loadJson(key, fallback) {
   try {
@@ -183,7 +185,7 @@ function fillFormForRecipe(recipe) {
   el.recipeDialogTitle.textContent = recipe ? "Edit Recipe" : "Add Recipe";
   el.recipeForm.recipeId.value = recipe?.id || "";
   el.recipeForm.name.value = recipe?.name || "";
-  el.recipeForm.servings.value = recipe?.servings || 4;
+  el.recipeForm.servings.value = recipe?.servings || TARGET_SERVINGS;
   el.recipeForm.tags.value = recipe?.tags?.join(", ") || "";
   el.recipeForm.ingredients.value = recipe
     ? recipe.ingredients.map((i) => `${i.section} | ${i.amount} ${i.unit} ${i.item}`).join(NEWLINE)
@@ -205,8 +207,14 @@ function renderRecipes() {
     pick.className = "checkbox-inline";
     pick.innerHTML = `<input type="checkbox" ${state.selected.has(recipe.id) ? "checked" : ""}/> Add to week`;
     pick.querySelector("input").addEventListener("change", () => {
-      if (state.selected.has(recipe.id)) state.selected.delete(recipe.id);
-      else state.selected.add(recipe.id);
+      if (state.selected.has(recipe.id)) {
+        state.selected.delete(recipe.id);
+        Object.keys(state.assignments).forEach((day) => {
+          if (state.assignments[day] === recipe.id) state.assignments[day] = "";
+        });
+      } else {
+        state.selected.add(recipe.id);
+      }
       persist();
       renderAll();
     });
@@ -291,7 +299,7 @@ function renderPlanner() {
 }
 
 function getActiveRecipeIds() {
-  return [...state.selected];
+  return [...state.selected].filter((id) => state.recipes.some((recipe) => recipe.id === id));
 }
 
 function grocerySessionKey(activeRecipeIds) {
@@ -302,10 +310,18 @@ function grocerySessionKey(activeRecipeIds) {
 function buildGroceryItems() {
   const activeRecipeIds = getActiveRecipeIds();
   const activeRecipes = state.recipes.filter((r) => activeRecipeIds.includes(r.id));
+  const assignmentCounts = DAYS.reduce((acc, day) => {
+    const recipeId = state.assignments[day];
+    if (!recipeId || !state.selected.has(recipeId)) return acc;
+    acc[recipeId] = (acc[recipeId] || 0) + 1;
+    return acc;
+  }, {});
   const totals = {};
 
   activeRecipes.forEach((recipe) => {
-    const scale = 4 / recipe.servings;
+    const timesPlanned = assignmentCounts[recipe.id] || 0;
+    const multiplier = timesPlanned > 0 ? timesPlanned : 1;
+    const scale = (TARGET_SERVINGS / recipe.servings) * multiplier;
     recipe.ingredients.forEach((ingredient) => {
       if (!state.includeStaples && isStaple(ingredient.item)) return;
       const key = `${ingredient.section}|${normalize(ingredient.item)}|${normalize(ingredient.unit)}`;
@@ -430,6 +446,9 @@ function importRecipes(file) {
 }
 
 function renderAll() {
+  Object.keys(state.assignments).forEach((day) => {
+    if (!state.selected.has(state.assignments[day])) state.assignments[day] = "";
+  });
   renderRecipes();
   renderPlanner();
   renderGroceryList();
@@ -471,7 +490,7 @@ el.recipeForm.addEventListener("submit", (event) => {
   upsertRecipe({
     id: recipeId,
     name: formData.get("name").toString().trim(),
-    servings: Number(formData.get("servings")) || 4,
+    servings: Number(formData.get("servings")) || TARGET_SERVINGS,
     tags: formData
       .get("tags")
       .toString()
