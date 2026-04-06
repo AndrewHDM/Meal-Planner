@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meal Planner</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Meal Planner</h1>
+        <p>Pick weekly meals, assign days, and print your grocery list.</p>
+      </div>
+      <div class="header-actions no-print">
+        <button id="addRecipeBtn" type="button">Add Recipe</button>
+        <button id="importBtn" type="button">Import</button>
+        <button id="exportBtn" type="button">Export</button>
+        <button id="printBtn" type="button">Print</button>
+        <input id="importFile" type="file" accept="application/json" hidden />
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="card">
+        <div class="row">
+          <h2>1) Choose 3–5 Meals</h2>
+          <span id="selectionCount" class="pill">0 selected</span>
+        </div>
+        <div class="row no-print">
+          <label for="tagFilter">Filter:</label>
+          <select id="tagFilter">
+            <option value="all">All</option>
+            <option value="quick">Quick</option>
+            <option value="high effort">High Effort</option>
+            <option value="favorite">Favorites</option>
+          </select>
+        </div>
+        <div id="recipesGrid" class="recipes-grid"></div>
+      </section>
+
+      <section class="card">
+        <h2>2) Assign Meals to Days</h2>
+        <p class="hint">Optional: pick meals for each day from your selected recipes.</p>
+        <div id="weeklyPlanner" class="weekly-planner"></div>
+      </section>
+
+      <section class="card grocery-card">
+        <div class="row">
+          <h2>3) Grocery List (4 servings each)</h2>
+          <label class="checkbox-inline no-print">
+            <input type="checkbox" id="includeStaples" />
+            Include pantry staples
+          </label>
+        </div>
+        <p id="selectionHint" class="hint">Select 3–5 meals to build your grocery list.</p>
+        <div id="groceryList" class="grocery-list"></div>
+      </section>
+    </main>
+
+    <dialog id="recipeDialog">
+      <form id="recipeForm" method="dialog">
+        <h3 id="recipeDialogTitle">Add Recipe</h3>
+        <input type="hidden" name="recipeId" />
+
+        <label>
+          Recipe name
+          <input name="name" required />
+        </label>
+
+        <label>
+          Servings in source recipe
+          <input name="servings" type="number" min="1" value="4" required />
+        </label>
+
+        <label>
+          Tags (comma-separated)
+          <input name="tags" placeholder="quick, favorite" />
+        </label>
+
+        <label>
+          Ingredients (one per line)
+          <textarea
+            name="ingredients"
+            rows="8"
+            placeholder="Produce | 2 whole onions\nMeat/Seafood | 1 lb chicken breast\nPantry | 2 cup rice"
+            required
+          ></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button type="button" id="cancelDialog">Cancel</button>
+          <button type="submit">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="script.js"></script>
+  </body>
+</html>
