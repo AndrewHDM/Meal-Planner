@@ -1,5 +1,6 @@
 const STORE_SECTIONS = ["Produce", "Meat/Seafood", "Dairy", "Pantry", "Frozen"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const NEWLINE = "\n";
 const STAPLE_KEYWORDS = [
   "salt",
   "pepper",
@@ -185,7 +186,7 @@ function fillFormForRecipe(recipe) {
   el.recipeForm.servings.value = recipe?.servings || 4;
   el.recipeForm.tags.value = recipe?.tags?.join(", ") || "";
   el.recipeForm.ingredients.value = recipe
-    ? recipe.ingredients.map((i) => `${i.section} | ${i.amount} ${i.unit} ${i.item}`).join("\n")
+    ? recipe.ingredients.map((i) => `${i.section} | ${i.amount} ${i.unit} ${i.item}`).join(NEWLINE)
     : "";
 }
 
@@ -452,7 +453,7 @@ el.recipeForm.addEventListener("submit", (event) => {
   const parsedIngredients = formData
     .get("ingredients")
     .toString()
-    .split("\n")
+    .split(NEWLINE)
     .map((line) => line.trim())
     .filter(Boolean)
     .map(parseIngredientLine)
