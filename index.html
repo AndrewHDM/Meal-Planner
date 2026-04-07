@@ -14,6 +14,7 @@
       </div>
       <div class="header-actions no-print">
         <button id="addRecipeBtn" type="button">Add Recipe</button>
+        <button id="addRecipePhotoBtn" type="button">Add Recipe by Photo</button>
         <button id="importBtn" type="button">Import</button>
         <button id="exportBtn" type="button">Export</button>
         <button id="printBtn" type="button">Print</button>
@@ -40,7 +41,14 @@
       </section>
 
       <section class="card">
-        <h2>2) Assign Meals to Days</h2>
+        <div class="row">
+          <h2>2) Assign Meals to Days</h2>
+          <div class="week-actions no-print">
+            <button id="saveWeekBtn" type="button">Save Week</button>
+            <button id="repeatWeekBtn" type="button">Repeat Last Week</button>
+            <button id="clearWeekBtn" type="button">Clear Week</button>
+          </div>
+        </div>
         <p class="hint">Optional: pick meals for each day from your selected recipes.</p>
         <div id="weeklyPlanner" class="weekly-planner"></div>
       </section>
@@ -53,7 +61,7 @@
             Include pantry staples
           </label>
         </div>
-        <p id="selectionHint" class="hint">Select 3–5 meals to build your grocery list.</p>
+        <p id="selectionHint" class="hint">Select meals to generate your grocery list.</p>
         <div id="groceryList" class="grocery-list"></div>
       </section>
     </main>
@@ -70,7 +78,7 @@
 
         <label>
           Servings in source recipe
-          <input name="servings" type="number" min="1" value="4" required />
+          <input name="servings" type="number" min="1" value="2" required />
         </label>
 
         <label>
@@ -78,19 +86,46 @@
           <input name="tags" placeholder="quick, favorite" />
         </label>
 
-        <label>
-          Ingredients (one per line)
-          <textarea
-            name="ingredients"
-            rows="8"
-            placeholder="Produce | 2 whole onions\nMeat/Seafood | 1 lb chicken breast\nPantry | 2 cup rice"
-            required
-          ></textarea>
-        </label>
+        <section class="ingredient-editor">
+          <div class="row ingredient-head">
+            <h4>Ingredients</h4>
+            <button id="addIngredientRowBtn" type="button">Add Ingredient</button>
+          </div>
+          <p class="hint">Use grocery-store names. Add section, amount, unit, and ingredient.</p>
+          <div id="ingredientRows" class="ingredient-rows"></div>
+        </section>
 
         <div class="dialog-actions">
           <button type="button" id="cancelDialog">Cancel</button>
           <button type="submit">Save</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="photoDialog">
+      <form id="photoForm" method="dialog">
+        <h3>Add Recipe by Photo</h3>
+        <p class="hint">Upload or take a photo, then review/edit before saving.</p>
+
+        <label>
+          Recipe photo
+          <input id="photoInput" name="photo" type="file" accept="image/*" capture="environment" />
+        </label>
+
+        <img id="photoPreview" class="photo-preview" alt="Recipe preview" hidden />
+
+        <label>
+          Pasted extracted text (optional)
+          <textarea
+            id="photoText"
+            rows="6"
+            placeholder="Paste OCR text here if you used your device scan tool. First line can be the title."
+          ></textarea>
+        </label>
+
+        <div class="dialog-actions">
+          <button type="button" id="cancelPhotoDialog">Cancel</button>
+          <button type="button" id="usePhotoTextBtn">Use Text in Recipe Form</button>
         </div>
       </form>
     </dialog>
