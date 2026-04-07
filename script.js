@@ -1,6 +1,8 @@
 const STORE_SECTIONS = ["Produce", "Meat/Seafood", "Dairy", "Pantry", "Frozen"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const TARGET_SERVINGS = 2;
+const LIBRARY_KEY = "mealPlannerRecipeLibrary";
+
 const STAPLE_KEYWORDS = [
   "salt",
   "pepper",
@@ -19,6 +21,7 @@ const defaultRecipes = [
     name: "Herby Pork Chops in Tomato Cream Sauce",
     servings: 2,
     tags: ["favorite", "high effort"],
+    instructions: "Pan-sear pork, roast carrots, and finish with tomato cream sauce.",
     ingredients: [
       { section: "Meat/Seafood", item: "pork chops", amount: 10, unit: "oz" },
       { section: "Produce", item: "garlic", amount: 3, unit: "clove" },
@@ -26,9 +29,7 @@ const defaultRecipes = [
       { section: "Produce", item: "tomato", amount: 1, unit: "whole" },
       { section: "Produce", item: "lemon", amount: 1, unit: "whole" },
       { section: "Dairy", item: "cream cheese", amount: 2, unit: "tbsp" },
-      { section: "Pantry", item: "Israeli couscous", amount: 0.5, unit: "cup" },
-      { section: "Pantry", item: "chicken stock concentrate", amount: 1, unit: "packet" },
-      { section: "Pantry", item: "Italian seasoning", amount: 1, unit: "tbsp" }
+      { section: "Pantry", item: "Israeli couscous", amount: 0.5, unit: "cup" }
     ]
   },
   {
@@ -36,15 +37,29 @@ const defaultRecipes = [
     name: "Sweet Soy-Glazed Meatballs",
     servings: 2,
     tags: ["quick", "favorite"],
+    instructions: "Mix and bake meatballs, roast veggies, then glaze with sweet soy.",
     ingredients: [
       { section: "Meat/Seafood", item: "ground beef", amount: 10, unit: "oz" },
       { section: "Produce", item: "carrots", amount: 12, unit: "oz" },
       { section: "Produce", item: "broccoli", amount: 1, unit: "whole" },
       { section: "Produce", item: "garlic", amount: 2, unit: "clove" },
       { section: "Pantry", item: "sweet soy glaze", amount: 4, unit: "tbsp" },
-      { section: "Pantry", item: "sesame seeds", amount: 1, unit: "tbsp" },
-      { section: "Pantry", item: "panko breadcrumbs", amount: 0.75, unit: "cup" },
-      { section: "Pantry", item: "sriracha", amount: 1, unit: "tsp" }
+      { section: "Pantry", item: "panko breadcrumbs", amount: 0.75, unit: "cup" }
+    ]
+  },
+  {
+    id: "southwest-tacodillas",
+    name: "Cheesy Southwest Chicken Tacodillas",
+    servings: 2,
+    tags: ["quick"],
+    instructions: "Cook chicken filling, stuff tortillas with cheese, and griddle until crisp.",
+    ingredients: [
+      { section: "Meat/Seafood", item: "ground chicken", amount: 10, unit: "oz" },
+      { section: "Produce", item: "onion", amount: 1, unit: "whole" },
+      { section: "Produce", item: "tomato", amount: 1, unit: "whole" },
+      { section: "Produce", item: "lime", amount: 1, unit: "whole" },
+      { section: "Dairy", item: "mozzarella cheese", amount: 0.5, unit: "cup" },
+      { section: "Pantry", item: "flour tortillas", amount: 6, unit: "count" }
     ]
   }
 ];
@@ -58,7 +73,9 @@ const el = {
   tagFilter: document.getElementById("tagFilter"),
   includeStaples: document.getElementById("includeStaples"),
   addRecipeBtn: document.getElementById("addRecipeBtn"),
-  addRecipePhotoBtn: document.getElementById("addRecipePhotoBtn"),
+  quickAddBtn: document.getElementById("quickAddBtn"),
+  bulkUploadBtn: document.getElementById("bulkUploadBtn"),
+  bulkPhotoInput: document.getElementById("bulkPhotoInput"),
   importBtn: document.getElementById("importBtn"),
   exportBtn: document.getElementById("exportBtn"),
   importFile: document.getElementById("importFile"),
@@ -72,22 +89,32 @@ const el = {
   ingredientRows: document.getElementById("ingredientRows"),
   addIngredientRowBtn: document.getElementById("addIngredientRowBtn"),
   cancelDialog: document.getElementById("cancelDialog"),
-  photoDialog: document.getElementById("photoDialog"),
-  photoInput: document.getElementById("photoInput"),
-  photoPreview: document.getElementById("photoPreview"),
-  photoText: document.getElementById("photoText"),
-  cancelPhotoDialog: document.getElementById("cancelPhotoDialog"),
-  usePhotoTextBtn: document.getElementById("usePhotoTextBtn")
+  quickAddDialog: document.getElementById("quickAddDialog"),
+  quickAddForm: document.getElementById("quickAddForm"),
+  cancelQuickAddDialog: document.getElementById("cancelQuickAddDialog"),
+  bulkReviewDialog: document.getElementById("bulkReviewDialog"),
+  draftQueueList: document.getElementById("draftQueueList"),
+  draftPreview: document.getElementById("draftPreview"),
+  draftTitle: document.getElementById("draftTitle"),
+  draftIngredients: document.getElementById("draftIngredients"),
+  draftInstructions: document.getElementById("draftInstructions"),
+  draftTags: document.getElementById("draftTags"),
+  skipDraftBtn: document.getElementById("skipDraftBtn"),
+  saveDraftBtn: document.getElementById("saveDraftBtn"),
+  saveNextDraftBtn: document.getElementById("saveNextDraftBtn"),
+  closeBulkDialogBtn: document.getElementById("closeBulkDialogBtn")
 };
 
 const state = {
-  recipes: [...defaultRecipes, ...loadJson("mealPlannerRecipes", [])],
+  recipes: initRecipeLibrary(),
   selected: new Set(loadJson("mealPlannerSelected", [])),
   assignments: loadJson("mealPlannerAssignments", Object.fromEntries(DAYS.map((d) => [d, ""]))),
   includeStaples: loadJson("mealPlannerIncludeStaples", false),
   groceryChecks: loadJson("mealPlannerGroceryChecks", {}),
   savedWeek: loadJson("mealPlannerSavedWeek", null),
-  draftIngredients: []
+  draftIngredients: [],
+  bulkDrafts: [],
+  bulkIndex: 0
 };
 
 function loadJson(key, fallback) {
@@ -99,17 +126,70 @@ function loadJson(key, fallback) {
   }
 }
 
+function normalize(text) {
+  return (text || "").toString().trim().toLowerCase();
+}
+
+function normalizeRecipe(recipe) {
+  const safeIngredients = Array.isArray(recipe.ingredients)
+    ? recipe.ingredients
+        .map((i) => ({
+          section: STORE_SECTIONS.includes(i.section) ? i.section : inferSection(i.item || ""),
+          item: (i.item || "").toString().trim(),
+          amount: Number(i.amount) || 0,
+          unit: (i.unit || "unit").toString().trim()
+        }))
+        .filter((i) => i.item && i.amount > 0)
+    : [];
+
+  return {
+    id: recipe.id || `user-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+    name: (recipe.name || "Untitled Recipe").toString().trim(),
+    servings: Number(recipe.servings) || TARGET_SERVINGS,
+    tags: Array.isArray(recipe.tags) ? recipe.tags.map((t) => t.toString().trim().toLowerCase()).filter(Boolean) : [],
+    instructions: (recipe.instructions || "").toString(),
+    ingredients: safeIngredients
+  };
+}
+
+function mergeRecipes(sources) {
+  const map = new Map();
+  sources.flat().forEach((recipe) => {
+    const normalized = normalizeRecipe(recipe);
+    const key = normalized.id || `name:${normalize(normalized.name)}`;
+    const nameKey = `name:${normalize(normalized.name)}`;
+    const existing = map.get(key) || map.get(nameKey);
+    if (existing) {
+      map.set(existing.id, {
+        ...existing,
+        ...normalized,
+        tags: [...new Set([...(existing.tags || []), ...(normalized.tags || [])]),],
+        ingredients: normalized.ingredients.length ? normalized.ingredients : existing.ingredients,
+        instructions: normalized.instructions || existing.instructions
+      });
+      return;
+    }
+    map.set(normalized.id, normalized);
+  });
+  return [...map.values()];
+}
+
+function initRecipeLibrary() {
+  const legacyUser = loadJson("mealPlannerRecipes", []);
+  const currentLibrary = loadJson(LIBRARY_KEY, []);
+  const merged = mergeRecipes([defaultRecipes, currentLibrary, legacyUser]);
+  localStorage.setItem(LIBRARY_KEY, JSON.stringify(merged));
+  return merged;
+}
+
 function persist() {
-  localStorage.setItem("mealPlannerRecipes", JSON.stringify(state.recipes.filter((r) => r.id.startsWith("user-"))));
+  localStorage.setItem(LIBRARY_KEY, JSON.stringify(state.recipes));
+  localStorage.setItem("mealPlannerRecipes", JSON.stringify(state.recipes));
   localStorage.setItem("mealPlannerSelected", JSON.stringify([...state.selected]));
   localStorage.setItem("mealPlannerAssignments", JSON.stringify(state.assignments));
   localStorage.setItem("mealPlannerIncludeStaples", JSON.stringify(state.includeStaples));
   localStorage.setItem("mealPlannerGroceryChecks", JSON.stringify(state.groceryChecks));
   localStorage.setItem("mealPlannerSavedWeek", JSON.stringify(state.savedWeek));
-}
-
-function normalize(text) {
-  return (text || "").toString().trim().toLowerCase();
 }
 
 function isStaple(itemName) {
@@ -121,49 +201,42 @@ function formatAmount(num) {
   return Number.isInteger(num) ? `${num}` : `${parseFloat(num.toFixed(2))}`;
 }
 
-function upsertRecipe(recipe) {
-  const idx = state.recipes.findIndex((r) => r.id === recipe.id);
-  if (idx >= 0) state.recipes[idx] = recipe;
-  else state.recipes.push(recipe);
+function inferSection(item) {
+  const name = normalize(item);
+  if (["chicken", "beef", "pork", "fish", "salmon", "shrimp", "turkey"].some((w) => name.includes(w))) return "Meat/Seafood";
+  if (["milk", "cheese", "yogurt", "cream", "butter"].some((w) => name.includes(w))) return "Dairy";
+  if (["frozen", "ice cream"].some((w) => name.includes(w))) return "Frozen";
+  if (["onion", "garlic", "tomato", "carrot", "broccoli", "pepper", "potato", "lime", "lemon"].some((w) => name.includes(w))) return "Produce";
+  return "Pantry";
 }
 
 function parseIngredientLine(line) {
   const split = line.split("|").map((part) => part.trim());
   if (split.length >= 2) {
     const section = STORE_SECTIONS.find((s) => normalize(s) === normalize(split[0]));
-    const right = split.slice(1).join(" |");
+    const right = split.slice(1).join("|").trim();
     const match = right.match(/^([\d.]+)\s+([^\s]+)\s+(.+)$/);
-    if (section && match) {
-      return { section, amount: Number(match[1]), unit: match[2], item: match[3] };
-    }
+    if (section && match) return { section, amount: Number(match[1]), unit: match[2], item: match[3] };
   }
-
   const match = line.match(/^([\d.]+)\s+([^\s]+)\s+(.+)$/);
   if (!match) return null;
-  const item = match[3].trim();
-  return {
-    section: inferSection(item),
-    amount: Number(match[1]),
-    unit: match[2],
-    item
-  };
+  return { section: inferSection(match[3]), amount: Number(match[1]), unit: match[2], item: match[3] };
 }
 
-function inferSection(item) {
-  const name = normalize(item);
-  if (["chicken", "beef", "pork", "fish", "salmon", "shrimp", "turkey"].some((w) => name.includes(w))) {
-    return "Meat/Seafood";
-  }
-  if (["milk", "cheese", "yogurt", "cream", "sour cream", "butter"].some((w) => name.includes(w))) {
-    return "Dairy";
-  }
-  if (["frozen", "ice cream"].some((w) => name.includes(w))) {
-    return "Frozen";
-  }
-  if (["onion", "garlic", "tomato", "carrot", "broccoli", "pepper", "potato", "lime", "lemon"].some((w) => name.includes(w))) {
-    return "Produce";
-  }
-  return "Pantry";
+function parseIngredientsText(text) {
+  return text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map(parseIngredientLine)
+    .filter(Boolean);
+}
+
+function upsertRecipe(recipe) {
+  const normalized = normalizeRecipe(recipe);
+  const idx = state.recipes.findIndex((r) => r.id === normalized.id);
+  if (idx >= 0) state.recipes[idx] = normalized;
+  else state.recipes.push(normalized);
 }
 
 function makeIngredientRow(ingredient = { section: "Pantry", amount: "", unit: "", item: "" }) {
@@ -209,18 +282,10 @@ function renderIngredientRows() {
     remove.type = "button";
     remove.textContent = "×";
 
-    section.addEventListener("change", () => {
-      state.draftIngredients[index].section = section.value;
-    });
-    amount.addEventListener("input", () => {
-      state.draftIngredients[index].amount = amount.value;
-    });
-    unit.addEventListener("input", () => {
-      state.draftIngredients[index].unit = unit.value;
-    });
-    item.addEventListener("input", () => {
-      state.draftIngredients[index].item = item.value;
-    });
+    section.addEventListener("change", () => (state.draftIngredients[index].section = section.value));
+    amount.addEventListener("input", () => (state.draftIngredients[index].amount = amount.value));
+    unit.addEventListener("input", () => (state.draftIngredients[index].unit = unit.value));
+    item.addEventListener("input", () => (state.draftIngredients[index].item = item.value));
     remove.addEventListener("click", () => {
       state.draftIngredients.splice(index, 1);
       renderIngredientRows();
@@ -233,12 +298,7 @@ function renderIngredientRows() {
 
 function collectValidIngredients() {
   return state.draftIngredients
-    .map((row) => ({
-      section: row.section,
-      amount: Number(row.amount),
-      unit: row.unit.trim(),
-      item: row.item.trim()
-    }))
+    .map((row) => ({ section: row.section, amount: Number(row.amount), unit: row.unit.trim(), item: row.item.trim() }))
     .filter((row) => row.item && row.unit && row.amount > 0 && STORE_SECTIONS.includes(row.section));
 }
 
@@ -248,6 +308,7 @@ function fillFormForRecipe(recipe) {
   el.recipeForm.name.value = recipe?.name || "";
   el.recipeForm.servings.value = recipe?.servings || TARGET_SERVINGS;
   el.recipeForm.tags.value = recipe?.tags?.join(", ") || "";
+  el.recipeForm.instructions.value = recipe?.instructions || "";
   state.draftIngredients = (recipe?.ingredients || [makeIngredientRow()]).map(makeIngredientRow);
   renderIngredientRows();
 }
@@ -326,7 +387,6 @@ function renderPlanner() {
   DAYS.forEach((day) => {
     const row = document.createElement("div");
     row.className = "day-row";
-
     const label = document.createElement("label");
     label.textContent = day;
 
@@ -361,8 +421,7 @@ function grocerySessionKey(activeRecipeIds) {
 }
 
 function buildGroceryItems() {
-  const activeRecipeIds = getActiveRecipeIds();
-  const activeRecipes = state.recipes.filter((r) => activeRecipeIds.includes(r.id));
+  const activeRecipes = state.recipes.filter((r) => getActiveRecipeIds().includes(r.id));
   const totals = {};
 
   activeRecipes.forEach((recipe) => {
@@ -388,11 +447,9 @@ function renderGroceryList() {
     return;
   }
 
-  if (count < 3 || count > 5) {
-    el.selectionHint.textContent = `You currently have ${count} meals. Keep it between 3 and 5 for the week.`;
-  } else {
-    el.selectionHint.textContent = "Ready to shop. Check items off as you go.";
-  }
+  el.selectionHint.textContent = count < 3 || count > 5
+    ? `You currently have ${count} meals. Keep it between 3 and 5 for the week.`
+    : "Ready to shop. Check items off as you go.";
 
   const items = buildGroceryItems();
   const sessionKey = grocerySessionKey(activeRecipeIds);
@@ -407,18 +464,16 @@ function renderGroceryList() {
     group.className = "group";
     const title = document.createElement("h3");
     title.textContent = section;
-
     const list = document.createElement("ul");
+
     sectionItems.forEach((item) => {
       const li = document.createElement("li");
       const key = `${section}|${normalize(item.item)}|${normalize(item.unit)}`;
-
       const wrap = document.createElement("label");
       wrap.className = "checkbox-inline";
       const box = document.createElement("input");
       box.type = "checkbox";
       box.checked = Boolean(checks[key]);
-
       const text = document.createElement("span");
       text.textContent = `${formatAmount(item.amount)} ${item.unit} ${item.item}`;
       if (box.checked) text.classList.add("done");
@@ -442,8 +497,7 @@ function renderGroceryList() {
 }
 
 function clearWeek() {
-  const ok = window.confirm("Clear selected meals, weekday assignments, and grocery progress for this week?");
-  if (!ok) return;
+  if (!window.confirm("Clear selected meals, weekday assignments, and grocery progress for this week?")) return;
   state.selected = new Set();
   state.assignments = Object.fromEntries(DAYS.map((d) => [d, ""]));
   state.groceryChecks = {};
@@ -452,12 +506,9 @@ function clearWeek() {
 }
 
 function saveWeek() {
-  state.savedWeek = {
-    selected: [...state.selected],
-    assignments: { ...state.assignments }
-  };
+  state.savedWeek = { selected: [...state.selected], assignments: { ...state.assignments } };
   persist();
-  window.alert("Week saved. You can restore it anytime with Repeat Last Week.");
+  window.alert("Week saved. You can restore it with Repeat Last Week.");
 }
 
 function repeatLastWeek() {
@@ -465,92 +516,133 @@ function repeatLastWeek() {
     window.alert("No saved week yet. Tap Save Week first.");
     return;
   }
-
   const validIds = new Set(state.recipes.map((r) => r.id));
   state.selected = new Set((state.savedWeek.selected || []).filter((id) => validIds.has(id)));
-  const restoredAssignments = Object.fromEntries(DAYS.map((d) => [d, ""]));
-  DAYS.forEach((day) => {
+  state.assignments = Object.fromEntries(DAYS.map((day) => {
     const id = state.savedWeek.assignments?.[day] || "";
-    restoredAssignments[day] = validIds.has(id) ? id : "";
-  });
-  state.assignments = restoredAssignments;
+    return [day, validIds.has(id) ? id : ""];
+  }));
   persist();
   renderAll();
 }
 
-function parsePhotoText(text) {
-  const lines = text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result?.toString() || "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
-  if (!lines.length) return null;
+function filenameToTitle(name) {
+  return name.replace(/\.[^/.]+$/, "").replace(/[-_]+/g, " ").trim() || "Untitled Recipe";
+}
 
-  const title = lines[0].replace(/^recipe[:\s-]*/i, "").trim();
-  const ingredients = lines
-    .slice(1)
-    .map(parseIngredientLine)
-    .filter(Boolean);
+async function startBulkUpload(files) {
+  const drafts = await Promise.all(
+    [...files].map(async (file, idx) => ({
+      id: `draft-${Date.now()}-${idx}`,
+      title: filenameToTitle(file.name),
+      ingredientsText: "",
+      instructions: "",
+      tags: "",
+      imageData: await readFileAsDataURL(file),
+      status: "pending"
+    }))
+  );
 
-  return {
-    name: title || "New Recipe",
+  state.bulkDrafts = drafts;
+  state.bulkIndex = 0;
+  renderBulkQueue();
+  loadBulkDraft(0);
+  el.bulkReviewDialog.showModal();
+}
+
+function renderBulkQueue() {
+  el.draftQueueList.innerHTML = "";
+  state.bulkDrafts.forEach((draft, idx) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `draft-item ${idx === state.bulkIndex ? "active" : ""}`;
+    button.textContent = `${idx + 1}. ${draft.title || "Untitled"} (${draft.status})`;
+    button.addEventListener("click", () => loadBulkDraft(idx));
+    el.draftQueueList.append(button);
+  });
+}
+
+function loadBulkDraft(idx) {
+  if (!state.bulkDrafts[idx]) return;
+  state.bulkIndex = idx;
+  const draft = state.bulkDrafts[idx];
+  el.draftPreview.hidden = !draft.imageData;
+  el.draftPreview.src = draft.imageData || "";
+  el.draftTitle.value = draft.title || "";
+  el.draftIngredients.value = draft.ingredientsText || "";
+  el.draftInstructions.value = draft.instructions || "";
+  el.draftTags.value = draft.tags || "";
+  renderBulkQueue();
+}
+
+function saveDraftToState() {
+  const draft = state.bulkDrafts[state.bulkIndex];
+  if (!draft) return false;
+
+  draft.title = el.draftTitle.value.trim();
+  draft.ingredientsText = el.draftIngredients.value;
+  draft.instructions = el.draftInstructions.value;
+  draft.tags = el.draftTags.value;
+
+  const ingredients = parseIngredientsText(draft.ingredientsText);
+  if (!draft.title || !ingredients.length) {
+    window.alert("Add at least a title and one valid ingredient line before saving.");
+    return false;
+  }
+
+  upsertRecipe({
+    id: `user-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+    name: draft.title,
     servings: TARGET_SERVINGS,
-    tags: [],
-    ingredients: ingredients.length ? ingredients : [makeIngredientRow()]
-  };
+    tags: draft.tags.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean),
+    instructions: draft.instructions,
+    ingredients
+  });
+
+  draft.status = "saved";
+  persist();
+  renderAll();
+  renderBulkQueue();
+  return true;
 }
 
-function openPhotoDialog() {
-  el.photoInput.value = "";
-  el.photoText.value = "";
-  el.photoPreview.hidden = true;
-  el.photoPreview.src = "";
-  el.photoDialog.showModal();
+function moveToNextDraft() {
+  const next = state.bulkDrafts.findIndex((d, i) => i > state.bulkIndex && d.status !== "saved");
+  if (next >= 0) {
+    loadBulkDraft(next);
+    return;
+  }
+  window.alert("No more pending drafts. You can close this queue.");
 }
 
-function exportRecipes() {
-  const blob = new Blob([JSON.stringify(state.recipes, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "meal-planner-recipes.json";
-  a.click();
-  URL.revokeObjectURL(url);
-}
+function quickAddRecipe(formData) {
+  const name = formData.get("name").toString().trim();
+  const ingredients = parseIngredientsText(formData.get("ingredients").toString());
+  if (!name || !ingredients.length) {
+    window.alert("Quick Add needs a title and at least one valid ingredient line.");
+    return false;
+  }
 
-function importRecipes(file) {
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      const parsed = JSON.parse(reader.result.toString());
-      if (!Array.isArray(parsed)) throw new Error("bad format");
-
-      parsed
-        .filter((r) => r?.name && Array.isArray(r?.ingredients))
-        .forEach((recipe) => {
-          upsertRecipe({
-            id: recipe.id || `user-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
-            name: recipe.name,
-            servings: Number(recipe.servings) || TARGET_SERVINGS,
-            tags: Array.isArray(recipe.tags) ? recipe.tags.map((t) => t.toString()) : [],
-            ingredients: recipe.ingredients
-              .map((i) => ({
-                section: STORE_SECTIONS.includes(i.section) ? i.section : "Pantry",
-                item: i.item,
-                amount: Number(i.amount) || 0,
-                unit: i.unit || "unit"
-              }))
-              .filter((i) => i.item && i.amount > 0)
-          });
-        });
-
-      persist();
-      renderAll();
-    } catch {
-      window.alert("Could not import that file. Please use a valid meal-planner JSON export.");
-    }
-  };
-  reader.readAsText(file);
+  upsertRecipe({
+    id: `user-${Date.now()}`,
+    name,
+    servings: TARGET_SERVINGS,
+    tags: formData.get("tags").toString().split(",").map((t) => t.trim().toLowerCase()).filter(Boolean),
+    instructions: formData.get("instructions").toString(),
+    ingredients
+  });
+  persist();
+  renderAll();
+  return true;
 }
 
 function renderAll() {
@@ -571,29 +663,38 @@ el.addRecipeBtn.addEventListener("click", () => {
   fillFormForRecipe();
   el.recipeDialog.showModal();
 });
-el.addRecipePhotoBtn.addEventListener("click", openPhotoDialog);
+
+el.quickAddBtn.addEventListener("click", () => {
+  el.quickAddForm.reset();
+  el.quickAddDialog.showModal();
+});
+
+el.cancelQuickAddDialog.addEventListener("click", () => el.quickAddDialog.close());
+
+el.quickAddForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const ok = quickAddRecipe(new FormData(el.quickAddForm));
+  if (ok) el.quickAddDialog.close();
+});
+
+el.bulkUploadBtn.addEventListener("click", () => el.bulkPhotoInput.click());
+el.bulkPhotoInput.addEventListener("change", async () => {
+  const files = el.bulkPhotoInput.files;
+  if (files?.length) await startBulkUpload(files);
+  el.bulkPhotoInput.value = "";
+});
+
+el.saveDraftBtn.addEventListener("click", saveDraftToState);
+el.saveNextDraftBtn.addEventListener("click", () => {
+  if (saveDraftToState()) moveToNextDraft();
+});
+el.skipDraftBtn.addEventListener("click", moveToNextDraft);
+el.closeBulkDialogBtn.addEventListener("click", () => el.bulkReviewDialog.close());
 
 el.cancelDialog.addEventListener("click", () => el.recipeDialog.close());
-el.cancelPhotoDialog.addEventListener("click", () => el.photoDialog.close());
-
 el.addIngredientRowBtn.addEventListener("click", () => {
   state.draftIngredients.push(makeIngredientRow());
   renderIngredientRows();
-});
-
-el.photoInput.addEventListener("change", () => {
-  const file = el.photoInput.files?.[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  el.photoPreview.src = url;
-  el.photoPreview.hidden = false;
-});
-
-el.usePhotoTextBtn.addEventListener("click", () => {
-  const parsed = parsePhotoText(el.photoText.value);
-  fillFormForRecipe(parsed || { name: "", servings: TARGET_SERVINGS, tags: [], ingredients: [makeIngredientRow()] });
-  el.photoDialog.close();
-  el.recipeDialog.showModal();
 });
 
 el.recipeForm.addEventListener("submit", (event) => {
@@ -605,23 +706,17 @@ el.recipeForm.addEventListener("submit", (event) => {
     window.alert("Recipe name is required.");
     return;
   }
-
   if (!ingredients.length) {
-    window.alert("Add at least one valid ingredient (amount, unit, and name).");
+    window.alert("Add at least one valid ingredient (section, amount, unit, ingredient).");
     return;
   }
 
-  const recipeId = formData.get("recipeId").toString() || `user-${Date.now()}`;
   upsertRecipe({
-    id: recipeId,
+    id: formData.get("recipeId").toString() || `user-${Date.now()}`,
     name: formData.get("name").toString().trim(),
     servings: Number(formData.get("servings")) || TARGET_SERVINGS,
-    tags: formData
-      .get("tags")
-      .toString()
-      .split(",")
-      .map((tag) => tag.trim().toLowerCase())
-      .filter(Boolean),
+    tags: formData.get("tags").toString().split(",").map((t) => t.trim().toLowerCase()).filter(Boolean),
+    instructions: formData.get("instructions").toString(),
     ingredients
   });
 
@@ -630,12 +725,35 @@ el.recipeForm.addEventListener("submit", (event) => {
   renderAll();
 });
 
-el.exportBtn.addEventListener("click", exportRecipes);
 el.importBtn.addEventListener("click", () => el.importFile.click());
 el.importFile.addEventListener("change", () => {
   const file = el.importFile.files?.[0];
-  if (file) importRecipes(file);
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const parsed = JSON.parse(reader.result.toString());
+      const imported = Array.isArray(parsed) ? parsed : [];
+      state.recipes = mergeRecipes([state.recipes, imported]);
+      persist();
+      renderAll();
+    } catch {
+      window.alert("Could not import that file. Please use a valid recipe JSON export.");
+    }
+  };
+  reader.readAsText(file);
   el.importFile.value = "";
+});
+
+el.exportBtn.addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(state.recipes, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "meal-planner-recipes.json";
+  a.click();
+  URL.revokeObjectURL(url);
 });
 
 el.printBtn.addEventListener("click", () => window.print());
@@ -643,4 +761,5 @@ el.clearWeekBtn.addEventListener("click", clearWeek);
 el.saveWeekBtn.addEventListener("click", saveWeek);
 el.repeatWeekBtn.addEventListener("click", repeatLastWeek);
 
+persist();
 renderAll();
