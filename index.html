@@ -13,12 +13,14 @@
         <p>Pick weekly meals, assign days, and print your grocery list.</p>
       </div>
       <div class="header-actions no-print">
+        <button id="quickAddBtn" type="button">Quick Add Recipe</button>
         <button id="addRecipeBtn" type="button">Add Recipe</button>
-        <button id="addRecipePhotoBtn" type="button">Add Recipe by Photo</button>
+        <button id="bulkUploadBtn" type="button">Bulk Upload Photos</button>
         <button id="importBtn" type="button">Import</button>
         <button id="exportBtn" type="button">Export</button>
         <button id="printBtn" type="button">Print</button>
         <input id="importFile" type="file" accept="application/json" hidden />
+        <input id="bulkPhotoInput" type="file" accept="image/*" multiple hidden />
       </div>
     </header>
 
@@ -86,12 +88,17 @@
           <input name="tags" placeholder="quick, favorite" />
         </label>
 
+        <label>
+          Instructions
+          <textarea name="instructions" rows="4" placeholder="Optional cooking notes/instructions"></textarea>
+        </label>
+
         <section class="ingredient-editor">
           <div class="row ingredient-head">
             <h4>Ingredients</h4>
             <button id="addIngredientRowBtn" type="button">Add Ingredient</button>
           </div>
-          <p class="hint">Use grocery-store names. Add section, amount, unit, and ingredient.</p>
+          <p class="hint">Use section + amount + unit + ingredient.</p>
           <div id="ingredientRows" class="ingredient-rows"></div>
         </section>
 
@@ -102,30 +109,77 @@
       </form>
     </dialog>
 
-    <dialog id="photoDialog">
-      <form id="photoForm" method="dialog">
-        <h3>Add Recipe by Photo</h3>
-        <p class="hint">Upload or take a photo, then review/edit before saving.</p>
+    <dialog id="quickAddDialog">
+      <form id="quickAddForm" method="dialog">
+        <h3>Quick Add Recipe</h3>
+        <p class="hint">Fast paste mode for title, ingredients, and instructions.</p>
 
         <label>
-          Recipe photo
-          <input id="photoInput" name="photo" type="file" accept="image/*" capture="environment" />
+          Recipe name
+          <input name="name" required />
         </label>
 
-        <img id="photoPreview" class="photo-preview" alt="Recipe preview" hidden />
+        <label>
+          Ingredients (one per line)
+          <textarea name="ingredients" rows="6" placeholder="Produce | 2 whole onions
+Pantry | 1 cup rice" required></textarea>
+        </label>
 
         <label>
-          Pasted extracted text (optional)
-          <textarea
-            id="photoText"
-            rows="6"
-            placeholder="Paste OCR text here if you used your device scan tool. First line can be the title."
-          ></textarea>
+          Instructions
+          <textarea name="instructions" rows="5" placeholder="Step 1... Step 2..."></textarea>
+        </label>
+
+        <label>
+          Tags
+          <input name="tags" placeholder="quick, favorite" />
         </label>
 
         <div class="dialog-actions">
-          <button type="button" id="cancelPhotoDialog">Cancel</button>
-          <button type="button" id="usePhotoTextBtn">Use Text in Recipe Form</button>
+          <button type="button" id="cancelQuickAddDialog">Cancel</button>
+          <button type="submit">Save Recipe</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="bulkReviewDialog">
+      <form id="bulkReviewForm" method="dialog">
+        <h3>Bulk Recipe Review Queue</h3>
+        <p class="hint">Review each uploaded card. Save, save and next, or skip for later.</p>
+
+        <div class="bulk-layout">
+          <aside id="draftQueueList" class="draft-queue"></aside>
+
+          <section class="draft-editor">
+            <img id="draftPreview" class="photo-preview" alt="Draft preview" hidden />
+
+            <label>
+              Title
+              <input id="draftTitle" />
+            </label>
+
+            <label>
+              Ingredients (one per line)
+              <textarea id="draftIngredients" rows="6" placeholder="Produce | 2 whole onions"></textarea>
+            </label>
+
+            <label>
+              Instructions
+              <textarea id="draftInstructions" rows="5" placeholder="Optional cooking notes"></textarea>
+            </label>
+
+            <label>
+              Tags
+              <input id="draftTags" placeholder="quick, favorite" />
+            </label>
+
+            <div class="dialog-actions">
+              <button type="button" id="skipDraftBtn">Skip for Later</button>
+              <button type="button" id="saveDraftBtn">Save</button>
+              <button type="button" id="saveNextDraftBtn">Save & Next</button>
+              <button type="button" id="closeBulkDialogBtn">Done</button>
+            </div>
+          </section>
         </div>
       </form>
     </dialog>
