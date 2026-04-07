@@ -93,6 +93,8 @@ const el = {
   quickAddForm: document.getElementById("quickAddForm"),
   cancelQuickAddDialog: document.getElementById("cancelQuickAddDialog"),
   bulkReviewDialog: document.getElementById("bulkReviewDialog"),
+  extractApiUrl: document.getElementById("extractApiUrl"),
+  extractStatus: document.getElementById("extractStatus"),
   draftQueueList: document.getElementById("draftQueueList"),
   draftPreview: document.getElementById("draftPreview"),
   draftTitle: document.getElementById("draftTitle"),
@@ -114,7 +116,8 @@ const state = {
   savedWeek: loadJson("mealPlannerSavedWeek", null),
   draftIngredients: [],
   bulkDrafts: [],
-  bulkIndex: 0
+  bulkIndex: 0,
+  extractApiUrl: loadJson("mealPlannerExtractApiUrl", "")
 };
 
 function loadJson(key, fallback) {
@@ -190,6 +193,7 @@ function persist() {
   localStorage.setItem("mealPlannerIncludeStaples", JSON.stringify(state.includeStaples));
   localStorage.setItem("mealPlannerGroceryChecks", JSON.stringify(state.groceryChecks));
   localStorage.setItem("mealPlannerSavedWeek", JSON.stringify(state.savedWeek));
+  localStorage.setItem("mealPlannerExtractApiUrl", JSON.stringify(state.extractApiUrl));
 }
 
 function isStaple(itemName) {
@@ -540,23 +544,78 @@ function filenameToTitle(name) {
 }
 
 async function startBulkUpload(files) {
-  const drafts = await Promise.all(
-    [...files].map(async (file, idx) => ({
-      id: `draft-${Date.now()}-${idx}`,
-      title: filenameToTitle(file.name),
-      ingredientsText: "",
-      instructions: "",
-      tags: "",
-      imageData: await readFileAsDataURL(file),
-      status: "pending"
-    }))
-  );
+  const drafts = [];
+  el.extractStatus.textContent = "Extracting recipe information from photos...";
+  el.extractStatus.className = "hint";
+
+  for (let idx = 0; idx < files.length; idx += 1) {
+    const file = files[idx];
+    const extractedDraft = await extractDraftFromPhoto(file, idx);
+    drafts.push(extractedDraft);
+    el.extractStatus.textContent = `Extracted ${idx + 1} of ${files.length} photos...`;
+  }
+
+  const usedFallback = drafts.some((d) => d.status === "needs review");
+  el.extractStatus.textContent = usedFallback
+    ? "Some photos need manual completion. Review drafts and fix any missing fields."
+    : "Extraction complete. Review and save drafts.";
+  el.extractStatus.className = usedFallback ? "hint status-warn" : "hint status-ok";
 
   state.bulkDrafts = drafts;
   state.bulkIndex = 0;
   renderBulkQueue();
   loadBulkDraft(0);
   el.bulkReviewDialog.showModal();
+}
+
+function linesFromIngredients(ingredients) {
+  if (!Array.isArray(ingredients)) return "";
+  return ingredients
+    .map((ingredient) => {
+      if (typeof ingredient === "string") return ingredient;
+      if (!ingredient) return "";
+      const section = STORE_SECTIONS.includes(ingredient.section) ? ingredient.section : inferSection(ingredient.item || "");
+      return `${section} | ${ingredient.amount || 1} ${ingredient.unit || "unit"} ${ingredient.item || ""}`.trim();
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+async function extractDraftFromPhoto(file, idx) {
+  const imageData = await readFileAsDataURL(file);
+  const baseDraft = {
+    id: `draft-${Date.now()}-${idx}`,
+    title: filenameToTitle(file.name),
+    ingredientsText: "",
+    instructions: "",
+    tags: "",
+    imageData,
+    status: "needs review"
+  };
+
+  if (!state.extractApiUrl) return baseDraft;
+
+  try {
+    const response = await fetch(state.extractApiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageData, filename: file.name })
+    });
+
+    if (!response.ok) return baseDraft;
+    const extracted = await response.json();
+
+    return {
+      ...baseDraft,
+      title: extracted.title?.trim() || baseDraft.title,
+      ingredientsText: linesFromIngredients(extracted.ingredients),
+      instructions: extracted.instructions || "",
+      tags: Array.isArray(extracted.tags) ? extracted.tags.join(", ") : (extracted.tags || ""),
+      status: "extracted"
+    };
+  } catch {
+    return baseDraft;
+  }
 }
 
 function renderBulkQueue() {
@@ -682,6 +741,12 @@ el.bulkPhotoInput.addEventListener("change", async () => {
   const files = el.bulkPhotoInput.files;
   if (files?.length) await startBulkUpload(files);
   el.bulkPhotoInput.value = "";
+});
+
+el.extractApiUrl.value = state.extractApiUrl || "";
+el.extractApiUrl.addEventListener("change", () => {
+  state.extractApiUrl = el.extractApiUrl.value.trim();
+  persist();
 });
 
 el.saveDraftBtn.addEventListener("click", saveDraftToState);
