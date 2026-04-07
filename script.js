@@ -1,6 +1,5 @@
 const STORE_SECTIONS = ["Produce", "Meat/Seafood", "Dairy", "Pantry", "Frozen"];
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const NEWLINE = "\n";
 const TARGET_SERVINGS = 2;
 const STAPLE_KEYWORDS = [
   "salt",
@@ -18,85 +17,34 @@ const defaultRecipes = [
   {
     id: "herby-pork-chops",
     name: "Herby Pork Chops in Tomato Cream Sauce",
-    servings: 4,
+    servings: 2,
     tags: ["favorite", "high effort"],
     ingredients: [
-      { section: "Meat/Seafood", item: "pork chops", amount: 20, unit: "oz" },
-      { section: "Produce", item: "garlic", amount: 6, unit: "clove" },
-      { section: "Produce", item: "carrots", amount: 24, unit: "oz" },
-      { section: "Produce", item: "tomato", amount: 2, unit: "whole" },
-      { section: "Produce", item: "lemon", amount: 2, unit: "whole" },
-      { section: "Dairy", item: "cream cheese", amount: 4, unit: "tbsp" },
-      { section: "Pantry", item: "Israeli couscous", amount: 1, unit: "cup" },
-      { section: "Pantry", item: "chicken stock concentrate", amount: 2, unit: "packet" },
-      { section: "Pantry", item: "Italian seasoning", amount: 2, unit: "tbsp" }
+      { section: "Meat/Seafood", item: "pork chops", amount: 10, unit: "oz" },
+      { section: "Produce", item: "garlic", amount: 3, unit: "clove" },
+      { section: "Produce", item: "carrots", amount: 12, unit: "oz" },
+      { section: "Produce", item: "tomato", amount: 1, unit: "whole" },
+      { section: "Produce", item: "lemon", amount: 1, unit: "whole" },
+      { section: "Dairy", item: "cream cheese", amount: 2, unit: "tbsp" },
+      { section: "Pantry", item: "Israeli couscous", amount: 0.5, unit: "cup" },
+      { section: "Pantry", item: "chicken stock concentrate", amount: 1, unit: "packet" },
+      { section: "Pantry", item: "Italian seasoning", amount: 1, unit: "tbsp" }
     ]
   },
   {
     id: "sweet-soy-meatballs",
     name: "Sweet Soy-Glazed Meatballs",
-    servings: 4,
+    servings: 2,
     tags: ["quick", "favorite"],
     ingredients: [
-      { section: "Meat/Seafood", item: "ground beef", amount: 20, unit: "oz" },
-      { section: "Produce", item: "carrots", amount: 24, unit: "oz" },
-      { section: "Produce", item: "broccoli", amount: 2, unit: "whole" },
-      { section: "Produce", item: "garlic", amount: 4, unit: "clove" },
-      { section: "Pantry", item: "sweet soy glaze", amount: 8, unit: "tbsp" },
-      { section: "Pantry", item: "sesame seeds", amount: 2, unit: "tbsp" },
-      { section: "Pantry", item: "panko breadcrumbs", amount: 1.5, unit: "cup" },
-      { section: "Pantry", item: "sriracha", amount: 2, unit: "tsp" }
-    ]
-  },
-  {
-    id: "southwest-tacodillas",
-    name: "Cheesy Southwest Chicken Tacodillas",
-    servings: 4,
-    tags: ["quick"],
-    ingredients: [
-      { section: "Meat/Seafood", item: "ground chicken", amount: 20, unit: "oz" },
-      { section: "Produce", item: "onion", amount: 2, unit: "whole" },
-      { section: "Produce", item: "tomato", amount: 2, unit: "whole" },
-      { section: "Produce", item: "lime", amount: 2, unit: "whole" },
-      { section: "Produce", item: "garlic", amount: 4, unit: "clove" },
-      { section: "Dairy", item: "mozzarella cheese", amount: 1, unit: "cup" },
-      { section: "Pantry", item: "flour tortillas", amount: 12, unit: "count" },
-      { section: "Pantry", item: "southwest spice blend", amount: 2, unit: "tbsp" },
-      { section: "Pantry", item: "beef stock concentrate", amount: 2, unit: "packet" }
-    ]
-  },
-  {
-    id: "buffalo-ranch-chicken",
-    name: "Crispy Buffalo Ranch Chicken",
-    servings: 4,
-    tags: ["high effort"],
-    ingredients: [
-      { section: "Meat/Seafood", item: "chicken cutlets", amount: 20, unit: "oz" },
-      { section: "Produce", item: "carrots", amount: 24, unit: "oz" },
-      { section: "Produce", item: "potatoes", amount: 24, unit: "oz" },
-      { section: "Produce", item: "garlic", amount: 4, unit: "clove" },
-      { section: "Dairy", item: "sour cream", amount: 3, unit: "tbsp" },
-      { section: "Pantry", item: "honey", amount: 4, unit: "tsp" },
-      { section: "Pantry", item: "frank's seasoning blend", amount: 0.5, unit: "oz" },
-      { section: "Pantry", item: "panko breadcrumbs", amount: 1, unit: "cup" },
-      { section: "Pantry", item: "buttermilk ranch dressing", amount: 3, unit: "oz" }
-    ]
-  },
-  {
-    id: "stuffed-meatloaves",
-    name: "Smothered & Stuffed Meatloaves",
-    servings: 4,
-    tags: ["high effort", "favorite"],
-    ingredients: [
-      { section: "Meat/Seafood", item: "ground beef", amount: 20, unit: "oz" },
-      { section: "Produce", item: "onion", amount: 2, unit: "whole" },
-      { section: "Produce", item: "green bell pepper", amount: 2, unit: "whole" },
-      { section: "Produce", item: "green beans", amount: 12, unit: "oz" },
-      { section: "Dairy", item: "cream cheese", amount: 4, unit: "tbsp" },
-      { section: "Pantry", item: "fry seasoning", amount: 2, unit: "tsp" },
-      { section: "Pantry", item: "panko breadcrumbs", amount: 0.5, unit: "cup" },
-      { section: "Pantry", item: "Worcestershire sauce", amount: 2, unit: "tsp" },
-      { section: "Pantry", item: "dijon mustard", amount: 2, unit: "tsp" }
+      { section: "Meat/Seafood", item: "ground beef", amount: 10, unit: "oz" },
+      { section: "Produce", item: "carrots", amount: 12, unit: "oz" },
+      { section: "Produce", item: "broccoli", amount: 1, unit: "whole" },
+      { section: "Produce", item: "garlic", amount: 2, unit: "clove" },
+      { section: "Pantry", item: "sweet soy glaze", amount: 4, unit: "tbsp" },
+      { section: "Pantry", item: "sesame seeds", amount: 1, unit: "tbsp" },
+      { section: "Pantry", item: "panko breadcrumbs", amount: 0.75, unit: "cup" },
+      { section: "Pantry", item: "sriracha", amount: 1, unit: "tsp" }
     ]
   }
 ];
@@ -110,24 +58,37 @@ const el = {
   tagFilter: document.getElementById("tagFilter"),
   includeStaples: document.getElementById("includeStaples"),
   addRecipeBtn: document.getElementById("addRecipeBtn"),
+  addRecipePhotoBtn: document.getElementById("addRecipePhotoBtn"),
   importBtn: document.getElementById("importBtn"),
   exportBtn: document.getElementById("exportBtn"),
   importFile: document.getElementById("importFile"),
   printBtn: document.getElementById("printBtn"),
+  clearWeekBtn: document.getElementById("clearWeekBtn"),
+  saveWeekBtn: document.getElementById("saveWeekBtn"),
+  repeatWeekBtn: document.getElementById("repeatWeekBtn"),
   recipeDialog: document.getElementById("recipeDialog"),
   recipeDialogTitle: document.getElementById("recipeDialogTitle"),
   recipeForm: document.getElementById("recipeForm"),
-  cancelDialog: document.getElementById("cancelDialog")
+  ingredientRows: document.getElementById("ingredientRows"),
+  addIngredientRowBtn: document.getElementById("addIngredientRowBtn"),
+  cancelDialog: document.getElementById("cancelDialog"),
+  photoDialog: document.getElementById("photoDialog"),
+  photoInput: document.getElementById("photoInput"),
+  photoPreview: document.getElementById("photoPreview"),
+  photoText: document.getElementById("photoText"),
+  cancelPhotoDialog: document.getElementById("cancelPhotoDialog"),
+  usePhotoTextBtn: document.getElementById("usePhotoTextBtn")
 };
 
 const state = {
   recipes: [...defaultRecipes, ...loadJson("mealPlannerRecipes", [])],
   selected: new Set(loadJson("mealPlannerSelected", [])),
-  assignments: Object.fromEntries(DAYS.map((d) => [d, ""])),
+  assignments: loadJson("mealPlannerAssignments", Object.fromEntries(DAYS.map((d) => [d, ""]))),
   includeStaples: loadJson("mealPlannerIncludeStaples", false),
-  groceryChecks: loadJson("mealPlannerGroceryChecks", {})
+  groceryChecks: loadJson("mealPlannerGroceryChecks", {}),
+  savedWeek: loadJson("mealPlannerSavedWeek", null),
+  draftIngredients: []
 };
-localStorage.removeItem("mealPlannerAssignments");
 
 function loadJson(key, fallback) {
   try {
@@ -144,10 +105,11 @@ function persist() {
   localStorage.setItem("mealPlannerAssignments", JSON.stringify(state.assignments));
   localStorage.setItem("mealPlannerIncludeStaples", JSON.stringify(state.includeStaples));
   localStorage.setItem("mealPlannerGroceryChecks", JSON.stringify(state.groceryChecks));
+  localStorage.setItem("mealPlannerSavedWeek", JSON.stringify(state.savedWeek));
 }
 
 function normalize(text) {
-  return text.trim().toLowerCase();
+  return (text || "").toString().trim().toLowerCase();
 }
 
 function isStaple(itemName) {
@@ -166,19 +128,118 @@ function upsertRecipe(recipe) {
 }
 
 function parseIngredientLine(line) {
-  const [left, right] = line.split("|").map((part) => part.trim());
-  if (!left || !right) return null;
-  const match = right.match(/^([\d.]+)\s+([^\s]+)\s+(.+)$/);
-  if (!match) return null;
-  const normalizedSection = STORE_SECTIONS.find((s) => normalize(s) === normalize(left));
-  if (!normalizedSection) return null;
+  const split = line.split("|").map((part) => part.trim());
+  if (split.length >= 2) {
+    const section = STORE_SECTIONS.find((s) => normalize(s) === normalize(split[0]));
+    const right = split.slice(1).join(" |");
+    const match = right.match(/^([\d.]+)\s+([^\s]+)\s+(.+)$/);
+    if (section && match) {
+      return { section, amount: Number(match[1]), unit: match[2], item: match[3] };
+    }
+  }
 
+  const match = line.match(/^([\d.]+)\s+([^\s]+)\s+(.+)$/);
+  if (!match) return null;
+  const item = match[3].trim();
   return {
-    section: normalizedSection,
+    section: inferSection(item),
     amount: Number(match[1]),
     unit: match[2],
-    item: match[3]
+    item
   };
+}
+
+function inferSection(item) {
+  const name = normalize(item);
+  if (["chicken", "beef", "pork", "fish", "salmon", "shrimp", "turkey"].some((w) => name.includes(w))) {
+    return "Meat/Seafood";
+  }
+  if (["milk", "cheese", "yogurt", "cream", "sour cream", "butter"].some((w) => name.includes(w))) {
+    return "Dairy";
+  }
+  if (["frozen", "ice cream"].some((w) => name.includes(w))) {
+    return "Frozen";
+  }
+  if (["onion", "garlic", "tomato", "carrot", "broccoli", "pepper", "potato", "lime", "lemon"].some((w) => name.includes(w))) {
+    return "Produce";
+  }
+  return "Pantry";
+}
+
+function makeIngredientRow(ingredient = { section: "Pantry", amount: "", unit: "", item: "" }) {
+  return {
+    section: ingredient.section || "Pantry",
+    amount: ingredient.amount ?? "",
+    unit: ingredient.unit || "",
+    item: ingredient.item || ""
+  };
+}
+
+function renderIngredientRows() {
+  el.ingredientRows.innerHTML = "";
+  state.draftIngredients.forEach((row, index) => {
+    const wrap = document.createElement("div");
+    wrap.className = "ingredient-row";
+
+    const section = document.createElement("select");
+    STORE_SECTIONS.forEach((s) => {
+      const option = document.createElement("option");
+      option.value = s;
+      option.textContent = s;
+      if (row.section === s) option.selected = true;
+      section.append(option);
+    });
+
+    const amount = document.createElement("input");
+    amount.type = "number";
+    amount.step = "0.25";
+    amount.min = "0";
+    amount.placeholder = "Amt";
+    amount.value = row.amount;
+
+    const unit = document.createElement("input");
+    unit.placeholder = "Unit";
+    unit.value = row.unit;
+
+    const item = document.createElement("input");
+    item.placeholder = "Ingredient";
+    item.value = row.item;
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "×";
+
+    section.addEventListener("change", () => {
+      state.draftIngredients[index].section = section.value;
+    });
+    amount.addEventListener("input", () => {
+      state.draftIngredients[index].amount = amount.value;
+    });
+    unit.addEventListener("input", () => {
+      state.draftIngredients[index].unit = unit.value;
+    });
+    item.addEventListener("input", () => {
+      state.draftIngredients[index].item = item.value;
+    });
+    remove.addEventListener("click", () => {
+      state.draftIngredients.splice(index, 1);
+      renderIngredientRows();
+    });
+
+    wrap.append(section, amount, unit, item, remove);
+    el.ingredientRows.append(wrap);
+  });
+}
+
+function collectValidIngredients() {
+  return state.draftIngredients
+    .map((row) => ({
+      section: row.section,
+      amount: Number(row.amount),
+      unit: row.unit.trim(),
+      item: row.item.trim()
+    }))
+    .filter((row) => row.item && row.unit && row.amount > 0 && STORE_SECTIONS.includes(row.section));
 }
 
 function fillFormForRecipe(recipe) {
@@ -187,9 +248,8 @@ function fillFormForRecipe(recipe) {
   el.recipeForm.name.value = recipe?.name || "";
   el.recipeForm.servings.value = recipe?.servings || TARGET_SERVINGS;
   el.recipeForm.tags.value = recipe?.tags?.join(", ") || "";
-  el.recipeForm.ingredients.value = recipe
-    ? recipe.ingredients.map((i) => `${i.section} | ${i.amount} ${i.unit} ${i.item}`).join(NEWLINE)
-    : "";
+  state.draftIngredients = (recipe?.ingredients || [makeIngredientRow()]).map(makeIngredientRow);
+  renderIngredientRows();
 }
 
 function renderRecipes() {
@@ -207,14 +267,8 @@ function renderRecipes() {
     pick.className = "checkbox-inline";
     pick.innerHTML = `<input type="checkbox" ${state.selected.has(recipe.id) ? "checked" : ""}/> Add to week`;
     pick.querySelector("input").addEventListener("change", () => {
-      if (state.selected.has(recipe.id)) {
-        state.selected.delete(recipe.id);
-        Object.keys(state.assignments).forEach((day) => {
-          if (state.assignments[day] === recipe.id) state.assignments[day] = "";
-        });
-      } else {
-        state.selected.add(recipe.id);
-      }
+      if (state.selected.has(recipe.id)) state.selected.delete(recipe.id);
+      else state.selected.add(recipe.id);
       persist();
       renderAll();
     });
@@ -234,6 +288,7 @@ function renderRecipes() {
 
     const actions = document.createElement("div");
     actions.className = "recipe-actions no-print";
+
     const editBtn = document.createElement("button");
     editBtn.type = "button";
     editBtn.textContent = "Edit";
@@ -274,10 +329,8 @@ function renderPlanner() {
 
     const label = document.createElement("label");
     label.textContent = day;
-    label.htmlFor = `day-${day}`;
 
     const select = document.createElement("select");
-    select.id = `day-${day}`;
     select.innerHTML = `<option value="">Unplanned</option>`;
     selectedRecipes.forEach((recipe) => {
       const option = document.createElement("option");
@@ -299,7 +352,7 @@ function renderPlanner() {
 }
 
 function getActiveRecipeIds() {
-  return [...state.selected].filter((id) => state.recipes.some((recipe) => recipe.id === id));
+  return [...state.selected];
 }
 
 function grocerySessionKey(activeRecipeIds) {
@@ -310,24 +363,14 @@ function grocerySessionKey(activeRecipeIds) {
 function buildGroceryItems() {
   const activeRecipeIds = getActiveRecipeIds();
   const activeRecipes = state.recipes.filter((r) => activeRecipeIds.includes(r.id));
-  const assignmentCounts = DAYS.reduce((acc, day) => {
-    const recipeId = state.assignments[day];
-    if (!recipeId || !state.selected.has(recipeId)) return acc;
-    acc[recipeId] = (acc[recipeId] || 0) + 1;
-    return acc;
-  }, {});
   const totals = {};
 
   activeRecipes.forEach((recipe) => {
-    const timesPlanned = assignmentCounts[recipe.id] || 0;
-    const multiplier = timesPlanned > 0 ? timesPlanned : 1;
-    const scale = (TARGET_SERVINGS / recipe.servings) * multiplier;
+    const scale = TARGET_SERVINGS / recipe.servings;
     recipe.ingredients.forEach((ingredient) => {
       if (!state.includeStaples && isStaple(ingredient.item)) return;
       const key = `${ingredient.section}|${normalize(ingredient.item)}|${normalize(ingredient.unit)}`;
-      if (!totals[key]) {
-        totals[key] = { ...ingredient, amount: 0 };
-      }
+      if (!totals[key]) totals[key] = { ...ingredient, amount: 0 };
       totals[key].amount += ingredient.amount * scale;
     });
   });
@@ -346,8 +389,7 @@ function renderGroceryList() {
   }
 
   if (count < 3 || count > 5) {
-    el.selectionHint.textContent =
-      `You currently have ${count} meals. Keep it between 3 and 5 for the week.`;
+    el.selectionHint.textContent = `You currently have ${count} meals. Keep it between 3 and 5 for the week.`;
   } else {
     el.selectionHint.textContent = "Ready to shop. Check items off as you go.";
   }
@@ -363,7 +405,6 @@ function renderGroceryList() {
 
     const group = document.createElement("section");
     group.className = "group";
-
     const title = document.createElement("h3");
     title.textContent = section;
 
@@ -374,7 +415,6 @@ function renderGroceryList() {
 
       const wrap = document.createElement("label");
       wrap.className = "checkbox-inline";
-
       const box = document.createElement("input");
       box.type = "checkbox";
       box.checked = Boolean(checks[key]);
@@ -387,8 +427,7 @@ function renderGroceryList() {
         const next = state.groceryChecks[sessionKey] || {};
         next[key] = box.checked;
         state.groceryChecks[sessionKey] = next;
-        if (box.checked) text.classList.add("done");
-        else text.classList.remove("done");
+        text.classList.toggle("done", box.checked);
         persist();
       });
 
@@ -400,6 +439,73 @@ function renderGroceryList() {
     group.append(title, list);
     el.groceryList.append(group);
   });
+}
+
+function clearWeek() {
+  const ok = window.confirm("Clear selected meals, weekday assignments, and grocery progress for this week?");
+  if (!ok) return;
+  state.selected = new Set();
+  state.assignments = Object.fromEntries(DAYS.map((d) => [d, ""]));
+  state.groceryChecks = {};
+  persist();
+  renderAll();
+}
+
+function saveWeek() {
+  state.savedWeek = {
+    selected: [...state.selected],
+    assignments: { ...state.assignments }
+  };
+  persist();
+  window.alert("Week saved. You can restore it anytime with Repeat Last Week.");
+}
+
+function repeatLastWeek() {
+  if (!state.savedWeek) {
+    window.alert("No saved week yet. Tap Save Week first.");
+    return;
+  }
+
+  const validIds = new Set(state.recipes.map((r) => r.id));
+  state.selected = new Set((state.savedWeek.selected || []).filter((id) => validIds.has(id)));
+  const restoredAssignments = Object.fromEntries(DAYS.map((d) => [d, ""]));
+  DAYS.forEach((day) => {
+    const id = state.savedWeek.assignments?.[day] || "";
+    restoredAssignments[day] = validIds.has(id) ? id : "";
+  });
+  state.assignments = restoredAssignments;
+  persist();
+  renderAll();
+}
+
+function parsePhotoText(text) {
+  const lines = text
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  if (!lines.length) return null;
+
+  const title = lines[0].replace(/^recipe[:\s-]*/i, "").trim();
+  const ingredients = lines
+    .slice(1)
+    .map(parseIngredientLine)
+    .filter(Boolean);
+
+  return {
+    name: title || "New Recipe",
+    servings: TARGET_SERVINGS,
+    tags: [],
+    ingredients: ingredients.length ? ingredients : [makeIngredientRow()]
+  };
+}
+
+function openPhotoDialog() {
+  el.photoInput.value = "";
+  el.photoText.value = "";
+  el.photoPreview.hidden = true;
+  el.photoPreview.src = "";
+  el.photoDialog.showModal();
 }
 
 function exportRecipes() {
@@ -418,24 +524,26 @@ function importRecipes(file) {
     try {
       const parsed = JSON.parse(reader.result.toString());
       if (!Array.isArray(parsed)) throw new Error("bad format");
-      const valid = parsed.filter((r) => r?.name && Array.isArray(r?.ingredients));
-      valid.forEach((recipe) => {
-        const normalized = {
-          id: recipe.id || `user-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
-          name: recipe.name,
-          servings: Number(recipe.servings) || 4,
-          tags: Array.isArray(recipe.tags) ? recipe.tags.map((t) => t.toString()) : [],
-          ingredients: recipe.ingredients
-            .map((i) => ({
-              section: STORE_SECTIONS.includes(i.section) ? i.section : "Pantry",
-              item: i.item,
-              amount: Number(i.amount) || 0,
-              unit: i.unit || "unit"
-            }))
-            .filter((i) => i.item && i.amount > 0)
-        };
-        upsertRecipe(normalized);
-      });
+
+      parsed
+        .filter((r) => r?.name && Array.isArray(r?.ingredients))
+        .forEach((recipe) => {
+          upsertRecipe({
+            id: recipe.id || `user-${Date.now()}-${Math.random().toString(16).slice(2, 7)}`,
+            name: recipe.name,
+            servings: Number(recipe.servings) || TARGET_SERVINGS,
+            tags: Array.isArray(recipe.tags) ? recipe.tags.map((t) => t.toString()) : [],
+            ingredients: recipe.ingredients
+              .map((i) => ({
+                section: STORE_SECTIONS.includes(i.section) ? i.section : "Pantry",
+                item: i.item,
+                amount: Number(i.amount) || 0,
+                unit: i.unit || "unit"
+              }))
+              .filter((i) => i.item && i.amount > 0)
+          });
+        });
+
       persist();
       renderAll();
     } catch {
@@ -446,9 +554,6 @@ function importRecipes(file) {
 }
 
 function renderAll() {
-  Object.keys(state.assignments).forEach((day) => {
-    if (!state.selected.has(state.assignments[day])) state.assignments[day] = "";
-  });
   renderRecipes();
   renderPlanner();
   renderGroceryList();
@@ -466,23 +571,43 @@ el.addRecipeBtn.addEventListener("click", () => {
   fillFormForRecipe();
   el.recipeDialog.showModal();
 });
+el.addRecipePhotoBtn.addEventListener("click", openPhotoDialog);
 
 el.cancelDialog.addEventListener("click", () => el.recipeDialog.close());
+el.cancelPhotoDialog.addEventListener("click", () => el.photoDialog.close());
+
+el.addIngredientRowBtn.addEventListener("click", () => {
+  state.draftIngredients.push(makeIngredientRow());
+  renderIngredientRows();
+});
+
+el.photoInput.addEventListener("change", () => {
+  const file = el.photoInput.files?.[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  el.photoPreview.src = url;
+  el.photoPreview.hidden = false;
+});
+
+el.usePhotoTextBtn.addEventListener("click", () => {
+  const parsed = parsePhotoText(el.photoText.value);
+  fillFormForRecipe(parsed || { name: "", servings: TARGET_SERVINGS, tags: [], ingredients: [makeIngredientRow()] });
+  el.photoDialog.close();
+  el.recipeDialog.showModal();
+});
 
 el.recipeForm.addEventListener("submit", (event) => {
   event.preventDefault();
   const formData = new FormData(el.recipeForm);
-  const parsedIngredients = formData
-    .get("ingredients")
-    .toString()
-    .split(NEWLINE)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .map(parseIngredientLine)
-    .filter(Boolean);
+  const ingredients = collectValidIngredients();
 
-  if (!parsedIngredients.length) {
-    window.alert("Use ingredient format: Section | amount unit ingredient");
+  if (!formData.get("name").toString().trim()) {
+    window.alert("Recipe name is required.");
+    return;
+  }
+
+  if (!ingredients.length) {
+    window.alert("Add at least one valid ingredient (amount, unit, and name).");
     return;
   }
 
@@ -497,7 +622,7 @@ el.recipeForm.addEventListener("submit", (event) => {
       .split(",")
       .map((tag) => tag.trim().toLowerCase())
       .filter(Boolean),
-    ingredients: parsedIngredients
+    ingredients
   });
 
   persist();
@@ -514,5 +639,8 @@ el.importFile.addEventListener("change", () => {
 });
 
 el.printBtn.addEventListener("click", () => window.print());
+el.clearWeekBtn.addEventListener("click", clearWeek);
+el.saveWeekBtn.addEventListener("click", saveWeek);
+el.repeatWeekBtn.addEventListener("click", repeatLastWeek);
 
 renderAll();
