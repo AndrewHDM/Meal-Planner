@@ -15,7 +15,7 @@
       <div class="header-actions no-print">
         <button id="quickAddBtn" type="button">Quick Add Recipe</button>
         <button id="addRecipeBtn" type="button">Add Recipe</button>
-        <button id="bulkUploadBtn" type="button">Bulk Upload Photos</button>
+        <button id="bulkUploadBtn" type="button">Extract From Photos</button>
         <button id="importBtn" type="button">Import</button>
         <button id="exportBtn" type="button">Export</button>
         <button id="printBtn" type="button">Print</button>
@@ -121,8 +121,7 @@
 
         <label>
           Ingredients (one per line)
-          <textarea name="ingredients" rows="6" placeholder="Produce | 2 whole onions
-Pantry | 1 cup rice" required></textarea>
+          <textarea name="ingredients" rows="6" placeholder="Produce | 2 whole onions\nPantry | 1 cup rice" required></textarea>
         </label>
 
         <label>
@@ -145,7 +144,13 @@ Pantry | 1 cup rice" required></textarea>
     <dialog id="bulkReviewDialog">
       <form id="bulkReviewForm" method="dialog">
         <h3>Bulk Recipe Review Queue</h3>
-        <p class="hint">Review each uploaded card. Save, save and next, or skip for later.</p>
+        <p class="hint">Upload photos, auto-extract recipe drafts, then review and save.</p>
+
+        <label class="no-print">
+          Extraction API URL
+          <input id="extractApiUrl" placeholder="https://your-extractor.example.com/api/extract" />
+        </label>
+        <p id="extractStatus" class="hint"></p>
 
         <div class="bulk-layout">
           <aside id="draftQueueList" class="draft-queue"></aside>
