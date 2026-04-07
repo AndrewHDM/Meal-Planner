@@ -1,0 +1,41 @@
+# Recipe Extraction API (minimal backend)
+
+This app is static on GitHub Pages, so reliable OCR/vision extraction must run in a backend API.
+
+## Recommended minimal architecture
+
+- Frontend: GitHub Pages (this repo)
+- Backend: one serverless endpoint (`POST /api/extract`)
+- Model: vision-capable model returning strict JSON
+- Security: API key stored only in backend environment secrets
+
+## Suggested deployment
+
+1. Deploy `extract-worker.js` to Cloudflare Workers (or adapt to Vercel/Netlify Functions).
+2. Set environment secret `OPENAI_API_KEY`.
+3. Copy the deployed endpoint URL.
+4. Paste URL in the app's **Extraction API URL** field.
+
+## Request format from frontend
+
+```json
+{
+  "imageData": "data:image/jpeg;base64,...",
+  "filename": "recipe-photo.jpg"
+}
+```
+
+## Expected response shape
+
+```json
+{
+  "title": "Recipe title",
+  "ingredients": [
+    {"section":"Produce","amount":2,"unit":"whole","item":"onions"}
+  ],
+  "instructions": "Step-by-step text",
+  "tags": ["quick"]
+}
+```
+
+If extraction confidence is low, backend should still return partial fields and empty arrays/strings so frontend can open draft review.
